@@ -19,7 +19,7 @@ python rec/src/train_rec_redial.py
 #### INSPIRED
 python rec/src/train_rec_inspired.py
 
-## Conversation Train
+## Conversation Task
 python conv/src/train_conv.py
 
 

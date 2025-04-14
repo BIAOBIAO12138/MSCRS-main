@@ -10,15 +10,17 @@
 - accelerate == 0.8.0
 
 ## Start
-We run all experiments and tune hyperparameters on a GPU with 32GB memory, you can adjust per_device_train_batch_size and per_device_eval_batch_size according to your GPU, and then the optimization hyperparameters (e.g., learning_rate) may also need to be tuned
+We run all experiments and tune hyperparameters on a GPU with 32GB memory, you can adjust per_device_train_batch_size and per_device_eval_batch_size according to your GPU.
 
-## Recommendation Pretrain
+## Recommendation Task
+
+## Pretrain
 ### ReDial
 python rec/src/train_pre_redial.py
 ### INSPIRED
 python rec/src/train_pre_inspired.py
 
-## Recommendation Train
+## Train
 ### ReDial
 python rec/src/train_rec_redial.py
 ### INSPIRED

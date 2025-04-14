@@ -12,6 +12,9 @@
 ## Start
 We run all experiments and tune hyperparameters on a GPU with 32GB memory, you can adjust per_device_train_batch_size and per_device_eval_batch_size according to your GPU.
 
+## datasets
+The dataset can be found here (https://drive.google.com/drive/folders/1M2cIDFD_a-o1HCgGmN8pEeGgT21xo5oe?usp=drive_link)
+
 ## Recommendation Task
 
 ## Pretrain

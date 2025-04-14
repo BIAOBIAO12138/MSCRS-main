@@ -12,21 +12,21 @@
 ## Start
 We run all experiments and tune hyperparameters on a GPU with 32GB memory, you can adjust per_device_train_batch_size and per_device_eval_batch_size according to your GPU.
 
-## datasets
+## Datasets
 The dataset can be found here (https://drive.google.com/drive/folders/1M2cIDFD_a-o1HCgGmN8pEeGgT21xo5oe?usp=drive_link)
 
 ## Recommendation Task
 
-## Pretrain
-### ReDial
+### Pretrain
+#### ReDial
 python rec/src/train_pre_redial.py
-### INSPIRED
+#### INSPIRED
 python rec/src/train_pre_inspired.py
 
-## Train
-### ReDial
+### Train
+#### ReDial
 python rec/src/train_rec_redial.py
-### INSPIRED
+#### INSPIRED
 python rec/src/train_rec_inspired.py
 
 ## Conversation Train

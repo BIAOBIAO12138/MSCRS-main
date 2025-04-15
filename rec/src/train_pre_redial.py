@@ -24,22 +24,22 @@ from model_prompt import MMPrompt
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--seed", type=int, default=42, help="A seed for reproducible training.")
-    parser.add_argument("--output_dir", type=str, default='/MSCRS-main/rec/src/pre-trained-redial', help="Where to store the final model.")
+    parser.add_argument("--output_dir", type=str, default='/home/weiyibiao/MSCRS-main/rec/src/pre-trained-redial', help="Where to store the final model.")
     parser.add_argument("--debug", action='store_true', help="Debug mode.")
     parser.add_argument("--dataset", type=str, default='redial', help="A file containing all data.")
     parser.add_argument('--num_workers', type=int, default=0)
     parser.add_argument("--max_length", type=int,default=200, help="max input length in dataset.")
     parser.add_argument("--prompt_max_length", type=int,default=200)
     parser.add_argument("--entity_max_length", type=int, default=32,help="max entity length in dataset.")
-    parser.add_argument("--tokenizer", type=str , default='/UniCRS-main/src/DialoGPT-small')
-    parser.add_argument("--text_tokenizer", type=str, default='/UniCRS-main/src/robert_base')
-    parser.add_argument("--model", type=str, default='/UniCRS-main/src/DialoGPT-small',help="Path to pretrained model or model identifier from huggingface.co/models.")
-    parser.add_argument("--text_encoder", type=str, default='/UniCRS-main/src/robert_base')
+    parser.add_argument("--tokenizer", type=str , default='/home/weiyibiao/weiyibiao/UniCRS-main/src/DialoGPT-small')
+    parser.add_argument("--text_tokenizer", type=str, default='/home/weiyibiao/weiyibiao/UniCRS-main/src/robert_base')
+    parser.add_argument("--model", type=str, default='/home/weiyibiao/weiyibiao/UniCRS-main/src/DialoGPT-small',help="Path to pretrained model or model identifier from huggingface.co/models.")
+    parser.add_argument("--text_encoder", type=str, default='/home/weiyibiao/weiyibiao/UniCRS-main/src/robert_base')
     parser.add_argument("--num_bases", type=int, default=8, help="num_bases in RGCN.")
     parser.add_argument("--num_train_epochs", type=int, default=5, help="Total number of training epochs to perform.")
     parser.add_argument("--max_train_steps", type=int, default=None,help="Total number of training steps to perform. If provided, overrides num_train_epochs.")
-    parser.add_argument("--per_device_train_batch_size", type=int, default=50,help="Batch size (per device) for the training dataloader.")
-    parser.add_argument("--per_device_eval_batch_size", type=int, default=50,help="Batch size (per device) for the evaluation dataloader.")
+    parser.add_argument("--per_device_train_batch_size", type=int, default=25,help="Batch size (per device) for the training dataloader.")
+    parser.add_argument("--per_device_eval_batch_size", type=int, default=25,help="Batch size (per device) for the evaluation dataloader.")
     parser.add_argument("--gradient_accumulation_steps", type=int, default=1,help="Number of updates steps to accumulate before performing a backward/update pass.")
     parser.add_argument("--learning_rate", type=float, default=5e-4, help="Initial learning rate (after the potential warmup period) to use.")
     parser.add_argument("--weight_decay", type=float, default=0.01, help="Weight decay to use.")
@@ -222,7 +222,7 @@ if __name__ == '__main__':
         for step, batch in enumerate(train_dataloader):
             with torch.no_grad():
                 token_embeds = text_encoder(**batch['prompt']).last_hidden_state
-            prompt_embeds = prompt_encoder(
+            prompt_embeds,loss_cl = prompt_encoder(
                 entity_ids=batch['entity'],
                 token_embeds=token_embeds,
                 output_entity=True
@@ -231,6 +231,7 @@ if __name__ == '__main__':
             batch['context']['entity_embeds'] = prompt_encoder.get_entity_embeds()
 
             loss = model(**batch['context'], rec=True).rec_loss / args.gradient_accumulation_steps
+            loss = loss
             accelerator.backward(loss)
             train_loss.append(float(loss))
 
@@ -261,7 +262,7 @@ if __name__ == '__main__':
         for batch in tqdm(valid_dataloader):
             with torch.no_grad():
                 token_embeds = text_encoder(**batch['prompt']).last_hidden_state
-                prompt_embeds = prompt_encoder(
+                prompt_embeds,loss_cl = prompt_encoder(
                     entity_ids=batch['entity'],
                     token_embeds=token_embeds,
                     output_entity=True
@@ -302,7 +303,7 @@ if __name__ == '__main__':
         for batch in tqdm(test_dataloader):
             with torch.no_grad():
                 token_embeds = text_encoder(**batch['prompt']).last_hidden_state
-                prompt_embeds = prompt_encoder(
+                prompt_embeds,loss_cl = prompt_encoder(
                     entity_ids=batch['entity'],
                     token_embeds=token_embeds,
                     output_entity=True

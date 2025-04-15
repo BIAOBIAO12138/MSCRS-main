@@ -13,7 +13,7 @@ from loguru import logger
 from torch.utils.data import DataLoader
 from tqdm.auto import tqdm
 from transformers import AdamW, get_linear_schedule_with_warmup, AutoTokenizer, AutoModel
-from dataset_dbpedia_inspired import DBpedia ,Co_occurrence_inspired ,text_sim ,image_sim
+from dataset_dbpedia_inspired import DBpedia ,Co_occurrence ,text_sim ,image_sim
 from dataset_pre_inspired import CRSDataset, CRSDataCollator_mm
 from evaluate_rec import RecEvaluator
 from model_gpt2 import PromptGPT2forCRS
@@ -24,17 +24,17 @@ from model_prompt import MMPrompt_inspired
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--seed", type=int, default=42, help="A seed for reproducible training.")
-    parser.add_argument("--output_dir", type=str, default='/MSCRS-main/rec/src/pre-trained-inspired', help="Where to store the final model.")
+    parser.add_argument("--output_dir", type=str, default='/home/weiyibiao//MSCRS-main/rec/src/pre-trained-inspired', help="Where to store the final model.")
     parser.add_argument("--debug", action='store_true', help="Debug mode.")
     parser.add_argument("--dataset", type=str, default='inspired', help="A file containing all data.")
     parser.add_argument('--num_workers', type=int, default=0)
     parser.add_argument("--max_length", type=int,default=200, help="max input length in dataset.")
     parser.add_argument("--prompt_max_length", type=int,default=200)
     parser.add_argument("--entity_max_length", type=int, default=32,help="max entity length in dataset.")
-    parser.add_argument("--tokenizer", type=str , default='/UniCRS-main/src/DialoGPT-small')
-    parser.add_argument("--text_tokenizer", type=str, default='/UniCRS-main/src/robert_base')
-    parser.add_argument("--model", type=str, default='/UniCRS-main/src/DialoGPT-small',help="Path to pretrained model or model identifier from huggingface.co/models.")
-    parser.add_argument("--text_encoder", type=str, default='/UniCRS-main/src/robert_base')
+    parser.add_argument("--tokenizer", type=str , default='/home/weiyibiao/weiyibiao/UniCRS-main/src/DialoGPT-small')
+    parser.add_argument("--text_tokenizer", type=str, default='/home/weiyibiao/weiyibiao/UniCRS-main/src/robert_base')
+    parser.add_argument("--model", type=str, default='/home/weiyibiao/weiyibiao/UniCRS-main/src/DialoGPT-small',help="Path to pretrained model or model identifier from huggingface.co/models.")
+    parser.add_argument("--text_encoder", type=str, default='/home/weiyibiao/weiyibiao/UniCRS-main/src/robert_base')
     parser.add_argument("--num_bases", type=int, default=8, help="num_bases in RGCN.")
     parser.add_argument("--num_train_epochs", type=int, default=5, help="Total number of training epochs to perform.")
     parser.add_argument("--max_train_steps", type=int, default=None,help="Total number of training steps to perform. If provided, overrides num_train_epochs.")
@@ -108,7 +108,7 @@ if __name__ == '__main__':
         prompt_tokenizer=text_tokenizer, prompt_max_length=args.prompt_max_length,
         entity_max_length=args.entity_max_length
     )
-    co = Co_occurrence_inspired(dataset=args.dataset, split='train', debug=args.debug ,all_items = kg['item_ids'],entity_max_length=args.entity_max_length,n_entity=kg['num_entities'] ).get_entity_co_info()
+    co = Co_occurrence(dataset=args.dataset, split='train', debug=args.debug ,all_items = kg['item_ids'],entity_max_length=args.entity_max_length,n_entity=kg['num_entities'] ).get_entity_co_info()
     text_simi  = text_sim(pad_entity_id=kg['pad_entity_id']).get_entity_ts_info()
     image_simi = image_sim(pad_entity_id=kg['pad_entity_id']).get_entity_is_info()
 
@@ -219,7 +219,7 @@ if __name__ == '__main__':
         for step, batch in enumerate(train_dataloader):
             with torch.no_grad():
                 token_embeds = text_encoder(**batch['prompt']).last_hidden_state
-            prompt_embeds = prompt_encoder(
+            prompt_embeds,loss_cl= prompt_encoder(
                 entity_ids=batch['entity'],
                 token_embeds=token_embeds,
                 output_entity=True
@@ -228,6 +228,7 @@ if __name__ == '__main__':
             batch['context']['entity_embeds'] = prompt_encoder.get_entity_embeds()
 
             loss = model(**batch['context'], rec=True).rec_loss / args.gradient_accumulation_steps
+            loss = loss +loss_cl*0.0001
             accelerator.backward(loss)
             train_loss.append(float(loss))
 
@@ -259,7 +260,7 @@ if __name__ == '__main__':
         for batch in tqdm(valid_dataloader):
             with torch.no_grad():
                 token_embeds = text_encoder(**batch['prompt']).last_hidden_state
-                prompt_embeds = prompt_encoder(
+                prompt_embeds,loss_cl = prompt_encoder(
                     entity_ids=batch['entity'],
                     token_embeds=token_embeds,
                     output_entity=True
@@ -301,7 +302,7 @@ if __name__ == '__main__':
         for batch in tqdm(test_dataloader):
             with torch.no_grad():
                 token_embeds = text_encoder(**batch['prompt']).last_hidden_state
-                prompt_embeds = prompt_encoder(
+                prompt_embeds,loss_cl= prompt_encoder(
                     entity_ids=batch['entity'],
                     token_embeds=token_embeds,
                     output_entity=True
@@ -332,10 +333,6 @@ if __name__ == '__main__':
             run.log(test_report)
         evaluator.reset_metric()
 
-        # epoch_dir = os.path.join(args.output_dir, str(epoch))
-        # os.makedirs(epoch_dir, exist_ok=True)
-        # prompt_encoder.save(epoch_dir)
-        # logger.info(f'save model of epoch {epoch}')
 
     final_dir = os.path.join(args.output_dir, 'final')
     os.makedirs(final_dir, exist_ok=True)

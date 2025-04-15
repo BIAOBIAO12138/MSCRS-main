@@ -35,7 +35,7 @@ class CRSDataset(Dataset):
         if self.entity_max_length is None:
             self.entity_max_length = self.tokenizer.model_max_length
 
-        dataset_dir = os.path.join('/MSCRS-main/data', dataset)
+        dataset_dir = os.path.join('/home/weiyibiao/MSCRS-main/data', dataset)
         data_file = os.path.join(dataset_dir, f'{split}_data.jsonl')
         self.data = []
 

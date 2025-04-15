@@ -15,7 +15,7 @@ import pickle
 class DBpedia:
     def __init__(self, dataset, debug=False):
         self.debug = debug
-        self.dataset_dir = os.path.join('/MSCRS-main/data', dataset)
+        self.dataset_dir = os.path.join('/home/weiyibiao/MSCRS-main/data', dataset)
         with open(os.path.join(self.dataset_dir, 'dbpedia_subkg.json'), 'r', encoding='utf-8') as f:
             self.entity_kg = json.load(f)
         with open(os.path.join(self.dataset_dir, 'entity2id.json'), 'r', encoding='utf-8') as f:
@@ -75,95 +75,24 @@ class DBpedia:
         }
         return kg_info
 
-
 class Co_occurrence:
     def __init__(self, dataset,split, entity_max_length, all_items,n_entity,debug=False):
         self.debug = debug
         self.entity_max_length =entity_max_length
-        self.co =[]
         self.all_items = set(all_items)
-        self.co_occurrence_matrix = np.zeros((n_entity, n_entity))
-        self.prepare_data()
-
-
-    def prepare_data(self):         
-            
-                input_file = '/MSCRS-main/data/redial/co_semantic_graph.pkl'
-                with open(input_file, 'rb') as f:
-                    self.co = pickle.load(f)  
-                for transaction in tqdm(self.co):
-                    for i in range(len(transaction)):
-                        for j in range(i + 1, len(transaction)):
-                            product_i = transaction[i]
-                            product_j = transaction[j]
-                            self.co_occurrence_matrix[product_i][product_j] += 1
-                            self.co_occurrence_matrix[product_j][product_i] += 1  
-                sparse_matrix = coo_matrix(self.co_occurrence_matrix)
-                self.row = sparse_matrix.row
-                self.col = sparse_matrix.col
-                self.data = sparse_matrix.data
-                sparse_matrix = coo_matrix((self.data, (self.row, self.col)), shape=self.co_occurrence_matrix.shape)
-
-
-                def get_sparse_top_k_similarities(sparse_matrix, k):
-                    nbrs = NearestNeighbors(n_neighbors=k, metric='cosine').fit(sparse_matrix)
-                    distances, indices = nbrs.kneighbors(sparse_matrix)
-                    num_entities = sparse_matrix.shape[0]
-                    rows = np.repeat(np.arange(num_entities), k)
-                    cols = indices.flatten()
-                    data = 1 - distances.flatten()  
-                    top_k_similarity_matrix = coo_matrix((data, (rows, cols)), shape=(num_entities, num_entities))
-                    return top_k_similarity_matrix
-
-                K = 100
-                top_k_similarity_matrix = get_sparse_top_k_similarities(sparse_matrix, K)
-                self.row_s = top_k_similarity_matrix.row
-                self.col_s = top_k_similarity_matrix.col
-                self.data_s = top_k_similarity_matrix.data
-                new_row_s =[]
-                new_col_s=[]
-                new_data_s=[]
-                for i in range(len(self.row_s)) :
-                    if self.col_s[i] not in self.all_items:
-                        continue
-                    else:
-                        new_row_s.append(self.row_s[i])
-                        new_col_s.append(self.col_s[i])
-                        new_data_s.append(self.data_s[i])
-
-                self.row_s = new_row_s
-                self.col_s = new_col_s
-                self.data_s = new_data_s
-                self.row_s = np.array(self.row_s)
-                self.col_s = np.array(self.col_s)
-                self.data_s = np.array(self.data_s)
-                self.edge_index_s = np.array([self.row_s, self.col_s])
-                self.edge_index_s = torch.as_tensor(self.edge_index_s, dtype=torch.long)
-                non_one_indices = (self.data != 1) & (self.data != 2)& (self.data != 3)& (self.data != 4)
-                self.row_c = self.row[non_one_indices]
-                self.col_c = self.col[non_one_indices]
-                self.data_c = self.data[non_one_indices]
-                self.edge_index_c = np.array([self.row_c, self.col_c])
-                self.edge_index_c = torch.as_tensor(self.edge_index_c, dtype=torch.long)
-                weight_counts = Counter(self.data_c)
-                total_weights = len(self.data_c)
-                weight_ratios = {weight: count / total_weights for weight, count in weight_counts.items()}
-
+        input_file = '/home/weiyibiao/MSCRS-main/data/redial/edge_index_c.pt'
+        self.edge_index_c = torch.load(input_file)
 
     def get_entity_co_info(self):
         co_info = {
-            'edge_index_s': self.edge_index_s,
             'edge_index_c': self.edge_index_c,
         }
         return co_info
 
 
-
-
-
 class text_sim:
     def __init__(self,pad_entity_id):
-        dataset_dir = '/MSCRS-main/data/inspired'
+        dataset_dir = '/home/weiyibiao/MSCRS-main/data/redial'
         data_file = os.path.join(dataset_dir, 'id_embeddings_text.json')
         self.co =[]
         self.pad_entity_id = pad_entity_id
@@ -212,7 +141,7 @@ class text_sim:
 
 class image_sim:
     def __init__(self,pad_entity_id):
-        dataset_dir = '/MSCRS-main/data/inspired'
+        dataset_dir = '/home/weiyibiao/MSCRS-main/data/redial'
         data_file = os.path.join(dataset_dir, 'id_embeddings_image.json')
         self.co =[]
         self.pad_entity_id = pad_entity_id

@@ -45,7 +45,7 @@ class CRSConvDataset(Dataset):
             self.prompt_max_length = self.prompt_tokenizer.model_max_length
         self.prompt_max_length -= 1
 
-        dataset_dir = os.path.join('/DCRS-main/conv/data', dataset)
+        dataset_dir = os.path.join('/home/weiyibiao/MSCRS-main/conv/data', dataset)
         data_file = os.path.join(dataset_dir, f'{split}_data_process.jsonl')
 
         self.data = []

@@ -33,17 +33,17 @@ def parse_args():
     parser.add_argument("--prompt_max_length", type=int,default=200)
     parser.add_argument("--entity_max_length", type=int,default=32, help="max entity length in dataset.")
     parser.add_argument('--num_workers', type=int, default=0)
-    parser.add_argument("--tokenizer", type=str,default='/UniCRS-main/src/DialoGPT-small')
-    parser.add_argument("--text_tokenizer", type=str,default='/UniCRS-main/src/robert_base')
-    parser.add_argument("--model", type=str, default='/UniCRS-main/src/DialoGPT-small',help="Path to pretrained model or model identifier from huggingface.co/models.")
-    parser.add_argument("--text_encoder", type=str,default='/UniCRS-main/src/robert_base')
+    parser.add_argument("--tokenizer", type=str,default='/home/weiyibiao/weiyibiao/UniCRS-main/src/DialoGPT-small')
+    parser.add_argument("--text_tokenizer", type=str,default='/home/weiyibiao/weiyibiao/UniCRS-main/src/robert_base')
+    parser.add_argument("--model", type=str, default='/home/weiyibiao/weiyibiao/UniCRS-main/src/DialoGPT-small',help="Path to pretrained model or model identifier from huggingface.co/models.")
+    parser.add_argument("--text_encoder", type=str,default='/home/weiyibiao/weiyibiao/UniCRS-main/src/robert_base')
     parser.add_argument("--num_bases", type=int, default=8, help="num_bases in RGCN.")
     parser.add_argument("--n_prefix_rec", type=int,default=10)
-    parser.add_argument("--prompt_encoder", type=str,default='/DCRS-main/rec/src/pre-trained-prompt-vricr-m3-mm/best')
+    parser.add_argument("--prompt_encoder", type=str,default='/home/weiyibiao/MSCRS-main/rec/src/pre-trained-redial/best')
     parser.add_argument("--num_train_epochs", type=int, default=5, help="Total number of training epochs to perform.")
     parser.add_argument("--max_train_steps", type=int, default=None,help="Total number of training steps to perform. If provided, overrides num_train_epochs.")
-    parser.add_argument("--per_device_train_batch_size", type=int, default=50,help="Batch size (per device) for the training dataloader.")
-    parser.add_argument("--per_device_eval_batch_size", type=int, default=50,help="Batch size (per device) for the evaluation dataloader.")
+    parser.add_argument("--per_device_train_batch_size", type=int, default=40,help="Batch size (per device) for the training dataloader.")
+    parser.add_argument("--per_device_eval_batch_size", type=int, default=40,help="Batch size (per device) for the evaluation dataloader.")
     parser.add_argument("--gradient_accumulation_steps", type=int, default=1,help="Number of updates steps to accumulate before performing a backward/update pass.")
     parser.add_argument("--learning_rate", type=float, default=1e-4,help="Initial learning rate (after the potential warmup period) to use.")
     parser.add_argument("--weight_decay", type=float, default=0.01, help="Weight decay to use.")
@@ -219,7 +219,7 @@ if __name__ == '__main__':
         for step, batch in enumerate(train_dataloader):
             with torch.no_grad():
                 token_embeds = text_encoder(**batch['prompt']).last_hidden_state
-            prompt_embeds = prompt_encoder(
+            prompt_embeds,loss_cl = prompt_encoder(
                 entity_ids=batch['entity'],
                 token_embeds=token_embeds,
                 output_entity=True,
@@ -228,6 +228,7 @@ if __name__ == '__main__':
             batch['context']['prompt_embeds'] = prompt_embeds
             batch['context']['entity_embeds'] = prompt_encoder.get_entity_embeds()
             loss = model(**batch['context'], rec=True).rec_loss / args.gradient_accumulation_steps
+            loss = loss +loss_cl*0.0001
             accelerator.backward(loss)
             train_loss.append(float(loss))
             if step % args.gradient_accumulation_steps == 0 or step == len(train_dataloader) - 1:
@@ -251,7 +252,7 @@ if __name__ == '__main__':
         for batch in tqdm(valid_dataloader):
             with torch.no_grad():
                 token_embeds = text_encoder(**batch['prompt']).last_hidden_state
-                prompt_embeds = prompt_encoder(
+                prompt_embeds,loss_cl = prompt_encoder(
                     entity_ids=batch['entity'],
                     token_embeds=token_embeds,
                     output_entity=True,
@@ -293,7 +294,7 @@ if __name__ == '__main__':
         for batch in tqdm(test_dataloader):
             with torch.no_grad():
                 token_embeds = text_encoder(**batch['prompt']).last_hidden_state
-                prompt_embeds = prompt_encoder(
+                prompt_embeds,loss_cl = prompt_encoder(
                     entity_ids=batch['entity'],
                     token_embeds=token_embeds,
                     output_entity=True,

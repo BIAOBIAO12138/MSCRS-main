@@ -26,7 +26,6 @@ from transformers import GPT2LMHeadModel
 from transformers import AutoModelForCausalLM, AutoTokenizer
 import wandb
 
-
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--seed", type=int, default=22, help="A seed for reproducible training.")
@@ -38,12 +37,12 @@ def parse_args():
     parser.add_argument('--resp_max_length', type=int,default=80, help="max length of decoder input.")
     parser.add_argument("--entity_max_length", type=int,default=64, help="max entity length in dataset.")
     parser.add_argument("--prompt_max_length", type=int, default=50)
-    parser.add_argument("--tokenizer", type=str,default='/UniCRS-main/src/DialoGPT-small')
+    parser.add_argument("--tokenizer", type=str,default='/home/weiyibiao/weiyibiao/UniCRS-main/src/DialoGPT-small')
     parser.add_argument("--ignore_pad_token_for_loss", action='store_true')
-    parser.add_argument("--text_tokenizer", type=str,default='/UniCRS-main/src/robert_base')
-    parser.add_argument("--model", type=str,default='/UniCRS-main/src/DialoGPT-small')
+    parser.add_argument("--text_tokenizer", type=str,default='/home/weiyibiao/weiyibiao/UniCRS-main/src/robert_base')
+    parser.add_argument("--model", type=str,default='/home/weiyibiao/weiyibiao/UniCRS-main/src/DialoGPT-small')
     parser.add_argument("--max_gen_len", type=int, default=50)
-    parser.add_argument("--text_encoder", type=str,default='/UniCRS-main/src/robert_base')
+    parser.add_argument("--text_encoder", type=str,default='/home/weiyibiao/weiyibiao/UniCRS-main/src/robert_base')
     parser.add_argument("--prompt_encoder", type=str)
     parser.add_argument("--n_prefix_conv", type=int,default=110)
     parser.add_argument("--num_bases", type=int, default=8, help="num_bases in RGCN")
@@ -51,9 +50,9 @@ def parse_args():
     parser.add_argument("--num_train_epochs", type=int, default=10, help="Total number of training epochs to perform.")
     parser.add_argument("--max_train_steps", type=int, default=None,
                         help="Total number of training steps to perform. If provided, overrides num_train_epochs.")
-    parser.add_argument("--per_device_train_batch_size", type=int, default=13,
+    parser.add_argument("--per_device_train_batch_size", type=int, default=32,
                         help="Batch size (per device) for the training dataloader.")
-    parser.add_argument("--per_device_eval_batch_size", type=int, default=16,
+    parser.add_argument("--per_device_eval_batch_size", type=int, default=32,
                         help="Batch size (per device) for the evaluation dataloader.")
     parser.add_argument("--gradient_accumulation_steps", type=int, default=1,
                         help="Number of updates steps to accumulate before performing a backward/update pass.")
@@ -126,7 +125,6 @@ if __name__ == '__main__':
     print(tokenizer.pad_token_id)
     print(tokenizer.encode('<movie>'))
 
-
     prompt_encoder = MMPrompt(
         model.config.n_embd, text_encoder.config.hidden_size, model.config.n_head, model.config.n_layer, 2,
         n_entity=kg['num_entities'], num_relations=kg['num_relations'], num_bases=args.num_bases,
@@ -147,8 +145,6 @@ if __name__ == '__main__':
     
     prompt_encoder = prompt_encoder.to(device)
     freeze_model_params(model, text_encoder, bias_only=args.bias_only)
-
-
     print('Total numbef of trainable gen params: ', count_parameters(model))
     print('Total numbef of trainable prompt params: ', count_parameters(text_encoder))
     modules = [model, prompt_encoder, text_encoder]

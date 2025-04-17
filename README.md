@@ -1,4 +1,4 @@
-# MSCRS-main
+# MSCRS: Multi-modal Semantic Graph Prompt Learning Framework for Conversational Recommender Systems
 ## Framework
 ![image](https://github.com/user-attachments/assets/83d58ca2-833c-4859-93d6-abc6d07f193b)
 🔥 2025.4: Our paper is accepted by SIGIR'25! Thank all Collaborators! 🎉🎉

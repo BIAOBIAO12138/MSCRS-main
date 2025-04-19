@@ -24,6 +24,7 @@ The processed dataset can be found here (https://drive.google.com/drive/folders/
 We have released the visual information obtained through web crawling. (The following image shows the posters and stills acquired by web crawling using item information from the INSPIRED dataset.)
 ![image](https://github.com/user-attachments/assets/e6ce02cc-23b1-4455-b376-202361af73e1)
 
+Please cite our paper if you use these datasets, thank you very much!🌹🌹
 ## Recommendation Task
 ### Pretrain
 #### ReDial

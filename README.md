@@ -41,8 +41,8 @@ python rec/src/train_rec_inspired.py
 python conv/src/train_conv.py
 
 
-
-
+## Acknowledgement
+We thank [VRICR](https://github.com/zxd-octopus/VRICR/tree/master), [UNICRS](https://github.com/wxl1999/UniCRS/tree/main) and [DCRS](https://github.com/huyquangdao/DCRS?tab=readme-ov-file) for providing the useful source code for the data preprocessing and prompt learning steps.
 
 
 

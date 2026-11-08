@@ -15,8 +15,6 @@ pyg == 2.0.1
 
 accelerate == 0.8.0
 
-## Datasets
-🌹🌹 We have supplemented the REDIAL and INSPIRED datasets with additional multimodal data. If you use the multimodal conversational recommendation dataset, please cite our paper~ ❤️
 ### Processed dataset
 The processed dataset can be found here (https://drive.google.com/drive/folders/1M2cIDFD_a-o1HCgGmN8pEeGgT21xo5oe?usp=drive_link)
 ### Image

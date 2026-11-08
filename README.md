@@ -17,9 +17,6 @@ accelerate == 0.8.0
 
 ### Processed dataset
 The processed dataset can be found here (https://drive.google.com/drive/folders/1M2cIDFD_a-o1HCgGmN8pEeGgT21xo5oe?usp=drive_link)
-### Image
-We have released the visual information obtained through web crawling. (The following image shows the posters and stills acquired by web crawling using item information from the INSPIRED dataset.)
-![image](https://github.com/user-attachments/assets/e6ce02cc-23b1-4455-b376-202361af73e1)
 
 ## Recommendation Task
 ### Pretrain
